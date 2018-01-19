@@ -37,15 +37,15 @@ func run(c *cli.Context) error {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
-	var bmpFormat string
+	var bpmFormat string
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {
-		bmpFormat = "\r\033[K%.0f bmp"
+		bpmFormat = "\r\033[K%.0f bpm"
 	} else {
-		bmpFormat = "%.0f bmp\n"
+		bpmFormat = "%.0f bpm\n"
 	}
 
 	for scanner.Scan() {
-		fmt.Printf(bmpFormat, 1/time.Now().Sub(lastTime).Minutes())
+		fmt.Printf(bpmFormat, 1/time.Now().Sub(lastTime).Minutes())
 		lastTime = time.Now()
 	}
 	if err = scanner.Err(); err != nil {
