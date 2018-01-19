@@ -16,9 +16,6 @@ func main()  {
     app.Usage = "Trigger events based on a frequency on stdin"
     app.Action = run
 
-    // Hide the help subcommand. We don't use subcommands in this app.
-    app.HideHelp = true
-
     app.Flags = []cli.Flag{
         cli.StringFlag{
             Name: "delimiter, d",
@@ -46,7 +43,7 @@ func run(c *cli.Context) error {
     } else {
         bmpFormat = "%.0f bmp\n"
     }
-    
+
     for scanner.Scan() {
         fmt.Printf(bmpFormat, 1 / time.Now().Sub(lastTime).Minutes())
         lastTime = time.Now()
