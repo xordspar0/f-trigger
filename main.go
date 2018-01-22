@@ -24,6 +24,27 @@ func main() {
 		},
 	}
 
+	cli.HelpFlag = cli.BoolFlag{
+		Name:  "help, h",
+		Usage: "Show this help message",
+	}
+	cli.VersionFlag = cli.BoolFlag{
+		Name:  "version, V",
+		Usage: "Print the version",
+	}
+
+	cli.AppHelpTemplate = `{{.Name}} - {{.Usage}}
+
+Version {{.Version}}
+
+Usage:
+   {{.HelpName}} [options] [triggers]...
+   {{if .VisibleFlags}}
+Options:
+   {{range .VisibleFlags}}{{.}}
+   {{end}}{{end}}
+`
+
 	if err := app.Run(os.Args); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
