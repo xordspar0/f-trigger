@@ -22,6 +22,15 @@ func main() {
 			Value: "\n",
 			Usage: "This character determines the start and end of each timed unit (not yet implemented)",
 		},
+		cli.StringFlag{
+			Name:  "unit, u",
+			Value: "bpm",
+			Usage: "The unit for measuring frequency (not yet implemented)",
+		},
+		cli.BoolFlag{
+			Name: "verbose, v",
+			Usage: "Visually display the current frequency measurement and which actions are being triggered (not yet implemented)",
+		},
 	}
 
 	cli.HelpFlag = cli.BoolFlag{
