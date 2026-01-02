@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 			Usage: "The unit for measuring frequency (not yet implemented)",
 		},
 		cli.BoolFlag{
-			Name: "verbose, v",
+			Name:  "verbose, v",
 			Usage: "Visually display the current frequency measurement and which actions are being triggered (not yet implemented)",
 		},
 	}
@@ -68,14 +68,14 @@ func run(c *cli.Context) error {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var bpmFormat string
-	if terminal.IsTerminal(int(os.Stdout.Fd())) {
+	if term.IsTerminal(int(os.Stdout.Fd())) {
 		bpmFormat = "\r\033[K%.0f bpm"
 	} else {
 		bpmFormat = "%.0f bpm\n"
 	}
 
 	for scanner.Scan() {
-		fmt.Printf(bpmFormat, 1/time.Now().Sub(lastTime).Minutes())
+		fmt.Printf(bpmFormat, 1/time.Since(lastTime).Minutes())
 		lastTime = time.Now()
 	}
 	if err = scanner.Err(); err != nil {
