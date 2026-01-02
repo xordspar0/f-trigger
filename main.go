@@ -68,14 +68,16 @@ func run(c *cli.Context) error {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var bpmFormat string
-	if term.IsTerminal(int(os.Stdout.Fd())) {
+	if term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stderr.Fd())) {
+		bpmFormat = "\033[F\033[K%.0f bpm"
+	} else if term.IsTerminal(int(os.Stdout.Fd())) {
 		bpmFormat = "\r\033[K%.0f bpm"
 	} else {
 		bpmFormat = "%.0f bpm\n"
 	}
 
 	for scanner.Scan() {
-		fmt.Printf(bpmFormat, 1/time.Since(lastTime).Minutes())
+		fmt.Fprintf(os.Stderr, bpmFormat, 1/time.Since(lastTime).Minutes())
 		lastTime = time.Now()
 	}
 	if err = scanner.Err(); err != nil {
