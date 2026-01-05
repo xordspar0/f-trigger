@@ -2,70 +2,34 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"flag"
 	"fmt"
 	"os"
 	"time"
 
-	"github.com/urfave/cli"
 	"golang.org/x/term"
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "f-trigger"
-	app.Usage = "Trigger events based on a frequency on stdin"
-	app.Action = run
+	var delimiter = flag.String("d", "\n", "delimiter; This character or string determines the start and end of each timed unit")
+	flag.Parse()
 
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "delimiter, d",
-			Value: "\n",
-			Usage: "This character determines the start and end of each timed unit (not yet implemented)",
-		},
-		cli.StringFlag{
-			Name:  "unit, u",
-			Value: "bpm",
-			Usage: "The unit for measuring frequency (not yet implemented)",
-		},
-		cli.BoolFlag{
-			Name:  "verbose, v",
-			Usage: "Visually display the current frequency measurement and which actions are being triggered (not yet implemented)",
-		},
-	}
-
-	cli.HelpFlag = cli.BoolFlag{
-		Name:  "help, h",
-		Usage: "Show this help message",
-	}
-	cli.VersionFlag = cli.BoolFlag{
-		Name:  "version, V",
-		Usage: "Print the version",
-	}
-
-	cli.AppHelpTemplate = `{{.Name}} - {{.Usage}}
-
-Version {{.Version}}
-
-Usage:
-   {{.HelpName}} [options] [triggers]...
-   {{if .VisibleFlags}}
-Options:
-   {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}
-`
-
-	if err := app.Run(os.Args); err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-}
-
-func run(c *cli.Context) error {
-	var err error
-
-	lastTime := time.Now()
+	needle := []byte(*delimiter)
+	needleLength := len(needle)
 
 	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if index := bytes.Index(data, needle); index >= 0 {
+			return index + needleLength, []byte(""), nil
+		}
+
+		if atEOF {
+			return 0, nil, nil
+		}
+
+		return len(data), nil, nil
+	})
 
 	var bpmFormat string
 	if term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stderr.Fd())) {
@@ -76,13 +40,13 @@ func run(c *cli.Context) error {
 		bpmFormat = "%.0f bpm\n"
 	}
 
+	lastTime := time.Now()
+
 	for scanner.Scan() {
 		fmt.Fprintf(os.Stderr, bpmFormat, 1/time.Since(lastTime).Minutes())
 		lastTime = time.Now()
 	}
-	if err = scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error reading input: ", err.Error())
 	}
-
-	return err
 }
